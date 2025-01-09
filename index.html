@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        #map {
+            height: 100%; /* Full height of the viewport */
+            width: 100%; /* Full width of the viewport */
+        }
+        .leaflet-container {
+            background: #000; /* Background for blank space */
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map', {
+            crs: L.CRS.Simple,       // Use a simple coordinate system
+            maxBoundsViscosity: 1,  // Keep the map constrained
+        });
+
+        // Define image dimensions (actual dimensions of your map.jpg)
+        const imageWidth = 1920;  // Replace with your image's width
+        const imageHeight = 1080; // Replace with your image's height
+        const bounds = [[0, 0], [imageHeight, imageWidth]];
+
+        // Add the image as an overlay to the map
+        L.imageOverlay('map.webp', bounds).addTo(map);
+
+        // Calculate the aspect ratio of the image and the viewport
+        const viewportAspectRatio = window.innerWidth / window.innerHeight;
+        const imageAspectRatio = imageWidth / imageHeight;
+
+        // Determine the appropriate zoom level to fit the image with correct aspect ratio
+        let minZoom;
+        if (viewportAspectRatio > imageAspectRatio) {
+            // Viewport is wider than the image: fit height
+            minZoom = map.getBoundsZoom(bounds, { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] });
+        } else {
+            // Viewport is taller than the image: fit width
+            minZoom = map.getBoundsZoom(bounds, { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] });
+        }
+
+        // Apply the calculated zoom level and set view to the image
+        map.setZoom(minZoom);
+        map.fitBounds(bounds);
+
+        // Restrict map panning and zooming to the image bounds
+        map.setMaxBounds(bounds);
+        map.options.minZoom = minZoom;
+        map.options.maxZoom = minZoom + 2; // Allow zooming in slightly for better interactivity
+
+        // Enable dragging within the image bounds
+        map.dragging.enable();
+
+        // Enable built-in zoom control (adds + and - buttons)
+        L.control.zoom({
+            position: 'topright' // Position the zoom controls in the top-right corner
+        }).addTo(map);
+    </script>
+</body>
+</html>
